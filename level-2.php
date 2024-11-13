@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,20 +17,16 @@
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.75);
         }
-
         .upload-container {
             position: relative;
             display: inline-block;
         }
-
         .file-input {
             display: none;
         }
-
         .upload-label:hover {
             cursor: pointer;
         }
-
         .upload-label:hover .file-input {
             display: block;
             position: absolute;
@@ -41,21 +36,24 @@
         }
     </style>
 </head>
-
 <body class="flex flex-col items-center">
     <h1 class="text-3xl font-bold my-8">Dynamic Image Gallery</h1>
+    <button onclick="document.getElementById('fileInput').click()" class="mb-4 px-4 py-2 bg-blue-500 text-white rounded shadow">Upload Images</button>
+    <input type="file" id="fileInput" class="file-input" accept="image/*" multiple onchange="uploadFiles(this)">
+
     <div class="gallery flex flex-wrap justify-center">
         <?php
-        $dir = 'img/';
-        $images = glob($dir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+            $dir = 'img/';
+            $images = glob($dir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
         ?>
         <?php if ($images) : ?>
             <?php foreach ($images as $image) : ?>
-                <div class="image m-4 p-2 border border-gray-300 shadow-lg rounded">
+                <div class="image m-4 p-2 border border-gray-300 shadow-lg rounded relative">
                     <div class="flex justify-center items-center">
                         <img src="<?= $image; ?>" alt="<?= basename($image); ?>" class="max-w-xs cursor-pointer" onclick="showModal('<?= $image; ?>')">
                     </div>
                     <p class="mt-2 text-sm text-center font-bold text-gray-600"><?= basename($image); ?></p>
+                    <button onclick="deleteImage('<?= basename($image); ?>')" class="absolute top-2 right-2 text-red-500 hover:text-red-700"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                 </div>
             <?php endforeach; ?>
         <?php else : ?>
@@ -103,7 +101,24 @@
                     console.error('Error:', error);
                 });
         }
+
+        function deleteImage(filename) {
+            fetch('delete.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ filename: filename })
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
     </script>
 </body>
-
 </html>

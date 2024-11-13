@@ -68,12 +68,15 @@ $sorted_images = array_keys($files_with_time);
     <?php endif; ?>
     <div class="gallery flex flex-wrap justify-center">
         <?php if ($sorted_images) : ?>
-            <?php foreach ($sorted_images as $image) : ?>
+            <?php foreach ($sorted_images as $image) : 
+                $size = filesize($image);
+                $formatedSize = number_format($size / 1048576, 2) . ' KB';
+            ?>
                 <div class="image m-4 p-2 border border-gray-300 shadow-lg rounded relative">
                     <div class="flex justify-center items-center">
                         <img src="<?= $image; ?>" alt="<?= basename($image); ?>" class="max-w-xs cursor-pointer" onclick="showModal('<?= $image; ?>')">
                     </div>
-                    <p class="mt-2 text-sm text-center font-bold text-gray-600"><?= basename($image); ?></p>
+                    <p class="mt-2 text-sm text-center font-bold text-gray-600"><?= basename($image); ?> <span class="text-gray-400 ">(<?= $formatedSize; ?>)</span></p>
                     <button onclick="deleteImage('<?= basename($image); ?>')" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Image Gallery</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.7/dist/sweetalert2.min.css" rel="stylesheet">
     <style>
         .modal {
             display: none;
@@ -45,12 +46,20 @@
 <?php
     $dir = 'img/';
     $images = glob($dir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+
+    $files_with_time = [];
+    foreach ($images as $image) {
+        $files_with_time[$image] = filemtime($image);
+    }
+
+    array_multisort($files_with_time, SORT_DESC, array_keys($files_with_time));
+    $sorted_images = array_keys($files_with_time);
 ?>
 
 <body class="flex flex-col items-center">
     <h1 class="text-3xl font-bold my-8">Dynamic Image Gallery</h1>
-    
-    <?php if ($images) : ?>
+
+    <?php if ($sorted_images) : ?>
         <div class="mb-4">
             <button onclick="document.getElementById('fileInput').click()" class="px-4 py-2 bg-blue-500 text-white rounded shadow">Upload New Images</button>
             <input type="file" id="fileInput" class="file-input" accept="image/*" multiple onchange="uploadFiles(this)">
@@ -58,8 +67,8 @@
         </div>
     <?php endif; ?>
     <div class="gallery flex flex-wrap justify-center">
-        <?php if ($images) : ?>
-            <?php foreach ($images as $image) : ?>
+        <?php if ($sorted_images) : ?>
+            <?php foreach ($sorted_images as $image) : ?>
                 <div class="image m-4 p-2 border border-gray-300 shadow-lg rounded relative">
                     <div class="flex justify-center items-center">
                         <img src="<?= $image; ?>" alt="<?= basename($image); ?>" class="max-w-xs cursor-pointer" onclick="showModal('<?= $image; ?>')">
@@ -83,6 +92,7 @@
         <img class="mx-auto my-10 max-w-full h-auto" id="modalImage">
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.16.7/dist/sweetalert2.min.js"></script>
     <script>
         function showModal(src) {
             var modal = document.getElementById('myModal');
@@ -99,71 +109,155 @@
         function uploadFiles(input) {
             var files = input.files;
             var formData = new FormData();
+            var totalSize = 0;
 
             for (var i = 0; i < files.length; i++) {
                 formData.append('files[]', files[i]);
+                totalSize += files[i].size;
             }
+
+            Swal.fire({
+                title: 'Uploading...',
+                text: 'Please wait while your images are being uploaded.',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading()
+                }
+            });
 
             fetch('upload.php', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.text())
+                .then(response => response.json())
                 .then(data => {
-                    alert('Files uploaded successfully!');
-                    location.reload();
+                    Swal.close();
+                    if (data.errors.length > 0) {
+                        Swal.fire({
+                            title: 'Upload Complete with Errors',
+                            text: `${data.uploaded} files uploaded successfully! Total size: ${(data.totalSize / (1024 * 1024)).toFixed(2)} MB\nErrors:\n${data.errors.join('\n')}`,
+                            icon: 'error'
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire({
+                            title: 'Upload Complete',
+                            text: `${data.uploaded} files uploaded successfully! Total size: ${(data.totalSize / (1024 * 1024)).toFixed(2)} MB`,
+                            icon: 'success'
+                        }).then(() => location.reload());
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'An error occurred while uploading your files. Please try again.',
+                        icon: 'error'
+                    });
                 });
         }
 
         function deleteImage(filename) {
-            if (confirm("Are you sure you want to delete this image?")) {
-                fetch('delete.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            filename: filename
-                        })
-                    })
-                    .then(response => response.text())
-                    .then(data => {
-                        alert(data);
-                        location.reload();
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Deleting...',
+                        text: 'Please wait while the image is being deleted.',
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading()
+                        }
                     });
-            }
+
+                    fetch('delete.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                filename: filename
+                            })
+                        })
+                        .then(response => response.text())
+                        .then(data => {
+                            Swal.close();
+                            Swal.fire({
+                                title: 'Deleted!',
+                                text: 'Your image has been deleted.',
+                                icon: 'success'
+                            }).then(() => location.reload());
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'An error occurred while deleting your image. Please try again.',
+                                icon: 'error'
+                            });
+                        });
+                }
+            });
         }
 
         function confirmDeleteAll() {
-            if (confirm("Are you sure you want to delete all images? This action cannot be undone.")) {
-                deleteAllImages();
-            }
-        }
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete all!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Deleting...',
+                        text: 'Please wait while all images are being deleted.',
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading()
+                        }
+                    });
 
-        function deleteAllImages() {
-            fetch('delete_all.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({})
-                })
-                .then(response => response.text())
-                .then(data => {
-                    alert(data);
-                    location.reload();
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+                    fetch('delete_all.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({})
+                        })
+                        .then(response => response.text())
+                        .then(data => {
+                            Swal.close();
+                            Swal.fire({
+                                title: 'Deleted!',
+                                text: 'All images have been deleted.',
+                                icon: 'success'
+                            }).then(() => location.reload());
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'An error occurred while deleting all images. Please try again.',
+                                icon: 'error'
+                            });
+                        });
+                }
+            });
         }
     </script>
+
 </body>
 
 </html>

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +19,6 @@
         }
     </style>
 </head>
-
 <body class="flex flex-col items-center">
     <h1 class="text-3xl font-bold my-8">Dynamic Image Gallery</h1>
     <div class="gallery flex flex-wrap justify-center">
@@ -28,11 +26,11 @@
             $dir = 'img/';
             $images = glob($dir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
         ?>
-        <div class="image m-4 p-2 border border-gray-300 shadow-lg rounded">
-            <?php foreach ($images as $image) : ?>
+        <?php foreach ($images as $image) : ?>
+            <div class="image m-4 p-2 border border-gray-300 shadow-lg rounded">
                 <img src="<?= $image; ?>" alt="<?= basename($image); ?>" class="max-w-xs cursor-pointer" onclick="showModal('<?= $image; ?>')">
-            <?php endforeach; ?>
-        </div>
+            </div>
+        <?php endforeach; ?>
     </div>
 
     <!-- Modal for image viewing -->
@@ -55,5 +53,4 @@
         }
     </script>
 </body>
-
 </html>

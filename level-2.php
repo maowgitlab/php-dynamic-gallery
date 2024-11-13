@@ -42,19 +42,22 @@
     </style>
 </head>
 
+<?php
+    $dir = 'img/';
+    $images = glob($dir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+?>
+
 <body class="flex flex-col items-center">
     <h1 class="text-3xl font-bold my-8">Dynamic Image Gallery</h1>
-    <div class="mb-4">
-        <button onclick="document.getElementById('fileInput').click()" class="px-4 py-2 bg-blue-500 text-white rounded shadow">Upload Images</button>
-        <input type="file" id="fileInput" class="file-input" accept="image/*" multiple onchange="uploadFiles(this)">
-        <button onclick="confirmDeleteAll()" class="px-4 py-2 bg-red-500 text-white rounded shadow ml-2">Delete All Images</button>
-    </div>
-
+    
+    <?php if ($images) : ?>
+        <div class="mb-4">
+            <button onclick="document.getElementById('fileInput').click()" class="px-4 py-2 bg-blue-500 text-white rounded shadow">Upload New Images</button>
+            <input type="file" id="fileInput" class="file-input" accept="image/*" multiple onchange="uploadFiles(this)">
+            <button onclick="confirmDeleteAll()" class="px-4 py-2 bg-red-500 text-white rounded shadow ml-2">Delete All Images</button>
+        </div>
+    <?php endif; ?>
     <div class="gallery flex flex-wrap justify-center">
-        <?php
-        $dir = 'img/';
-        $images = glob($dir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
-        ?>
         <?php if ($images) : ?>
             <?php foreach ($images as $image) : ?>
                 <div class="image m-4 p-2 border border-gray-300 shadow-lg rounded relative">

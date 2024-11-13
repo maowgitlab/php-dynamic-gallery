@@ -1,7 +1,7 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $response = ['uploaded' => 0, 'errors' => []];
-    
+
     if (isset($_FILES['files'])) {
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
         $fileCount = count($_FILES['files']['name']);
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } else {
         $response['errors'][] = 'No files uploaded or there was an upload error.';
     }
-    
+
     header('Content-Type: application/json');
     echo json_encode($response);
 } else {

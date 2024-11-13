@@ -44,16 +44,16 @@
 </head>
 
 <?php
-    $dir = 'img/';
-    $images = glob($dir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+$dir = 'img/';
+$images = glob($dir . '*.{jpg,jpeg,png,gif}', GLOB_BRACE);
 
-    $files_with_time = [];
-    foreach ($images as $image) {
-        $files_with_time[$image] = filemtime($image);
-    }
+$files_with_time = [];
+foreach ($images as $image) {
+    $files_with_time[$image] = filemtime($image);
+}
 
-    array_multisort($files_with_time, SORT_DESC, array_keys($files_with_time));
-    $sorted_images = array_keys($files_with_time);
+array_multisort($files_with_time, SORT_DESC, array_keys($files_with_time));
+$sorted_images = array_keys($files_with_time);
 ?>
 
 <body class="flex flex-col items-center">

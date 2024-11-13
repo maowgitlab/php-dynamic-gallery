@@ -29,8 +29,9 @@
         <?php foreach ($images as $image) : ?>
             <div class="image m-4 p-2 border border-gray-300 shadow-lg rounded">
                 <img src="<?= $image; ?>" alt="<?= basename($image); ?>" class="max-w-xs cursor-pointer" onclick="showModal('<?= $image; ?>')">
+                <p class="mt-2 text-sm text-center font-bold text-gray-600"><?= basename($image); ?></p>
             </div>
-        <?php endforeach; ?>
+            <?php endforeach; ?>
     </div>
 
     <!-- Modal for image viewing -->

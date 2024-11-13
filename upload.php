@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         for ($i = 0; $i < $fileCount; $i++) {
             $filename = $_FILES['files']['name'][$i];
-            $filetype = pathinfo($filename, PATHINFO_EXTENSION);
+            $filetype = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             $totalSize += $_FILES['files']['size'][$i];
 
             if (in_array($filetype, $allowed)) {

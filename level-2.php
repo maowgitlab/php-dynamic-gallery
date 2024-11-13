@@ -65,14 +65,18 @@ $sorted_images = array_keys($files_with_time);
             <input type="file" id="fileInput" class="file-input" accept="image/*" multiple onchange="uploadFiles(this)">
             <button onclick="confirmDeleteAll()" class="px-4 py-2 bg-red-500 text-white rounded shadow ml-2">Delete All Images</button>
         </div>
+        <div class="mb-4"> 
+            <label for="filter" class="text-gray-600 font-bold text-lg">Filter Images:</label>
+            <button onclick="filterImages('all')" class="px-4 py-2 bg-gray-500 text-white rounded shadow ml-2">All</button> <button onclick="filterImages('jpg')" class="px-4 py-2 bg-gray-500 text-white rounded shadow ml-2">JPG</button> <button onclick="filterImages('png')" class="px-4 py-2 bg-gray-500 text-white rounded shadow ml-2">PNG</button> <button onclick="filterImages('gif')" class="px-4 py-2 bg-gray-500 text-white rounded shadow ml-2">GIF</button> 
+        </div>
     <?php endif; ?>
-    <div class="gallery flex flex-wrap justify-center">
+    <div class="gallery flex flex-wrap justify-center" id="imageGallery">
         <?php if ($sorted_images) : ?>
             <?php foreach ($sorted_images as $image) : 
                 $size = filesize($image);
                 $formatedSize = number_format($size / 1048576, 2) . ' KB';
             ?>
-                <div class="image m-4 p-2 border border-gray-300 shadow-lg rounded relative">
+                <div class="image m-4 p-2 border border-gray-300 shadow-lg rounded relative" data-extension="<?= strtolower(pathinfo($image, PATHINFO_EXTENSION)); ?>">
                     <div class="flex justify-center items-center">
                         <img src="<?= $image; ?>" alt="<?= basename($image); ?>" class="max-w-xs cursor-pointer" onclick="showModal('<?= $image; ?>')">
                     </div>
@@ -256,6 +260,17 @@ $sorted_images = array_keys($files_with_time);
                                 icon: 'error'
                             });
                         });
+                }
+            });
+        }
+
+        function filterImages(extension) {
+            const images = document.querySelectorAll('.image');
+            images.forEach(image => {
+                if (extension === 'all' || image.getAttribute('data-extension') === extension) {
+                    image.style.display = 'block';
+                } else {
+                    image.style.display = 'none';
                 }
             });
         }

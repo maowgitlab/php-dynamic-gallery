@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $totalSize += $_FILES['files']['size'][$i];
 
             if (in_array($filetype, $allowed)) {
+                $filename = pathinfo($filename, PATHINFO_FILENAME) . '.' . $filetype;
                 $filepath = 'img/' . $filename;
 
                 if (move_uploaded_file($_FILES['files']['tmp_name'][$i], $filepath)) {
